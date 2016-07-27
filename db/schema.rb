@@ -25,9 +25,9 @@ ActiveRecord::Schema.define(version: 20160415153312) do
   create_table "automatic_exploitation_match_results", force: :cascade do |t|
     t.integer  "match_id"
     t.integer  "run_id"
-    t.string   "state",      null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.string   "state",      limit: 255, null: false
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
   end
 
   add_index "automatic_exploitation_match_results", ["match_id"], name: "index_automatic_exploitation_match_results_on_match_id", using: :btree
@@ -45,12 +45,12 @@ ActiveRecord::Schema.define(version: 20160415153312) do
 
   create_table "automatic_exploitation_matches", force: :cascade do |t|
     t.integer  "module_detail_id"
-    t.string   "state"
+    t.string   "state",                                    limit: 255
     t.integer  "nexpose_data_vulnerability_definition_id"
-    t.datetime "created_at",                               null: false
-    t.datetime "updated_at",                               null: false
+    t.datetime "created_at",                                           null: false
+    t.datetime "updated_at",                                           null: false
     t.integer  "match_set_id"
-    t.string   "matchable_type"
+    t.string   "matchable_type",                           limit: 255
     t.integer  "matchable_id"
     t.text     "module_fullname"
   end
@@ -99,18 +99,18 @@ ActiveRecord::Schema.define(version: 20160415153312) do
     t.string   "proof",       limit: 4096
     t.string   "ptype",       limit: 256
     t.integer  "source_id"
-    t.string   "source_type"
+    t.string   "source_type", limit: 255
   end
 
   create_table "events", force: :cascade do |t|
     t.integer  "workspace_id"
     t.integer  "host_id"
     t.datetime "created_at"
-    t.string   "name"
+    t.string   "name",         limit: 255
     t.datetime "updated_at"
     t.boolean  "critical"
     t.boolean  "seen"
-    t.string   "username"
+    t.string   "username",     limit: 255
     t.text     "info"
   end
 
@@ -120,13 +120,13 @@ ActiveRecord::Schema.define(version: 20160415153312) do
     t.integer  "vuln_id"
     t.datetime "attempted_at"
     t.boolean  "exploited"
-    t.string   "fail_reason"
-    t.string   "username"
+    t.string   "fail_reason",  limit: 255
+    t.string   "username",     limit: 255
     t.text     "module"
     t.integer  "session_id"
     t.integer  "loot_id"
     t.integer  "port"
-    t.string   "proto"
+    t.string   "proto",        limit: 255
     t.text     "fail_detail"
   end
 
@@ -144,25 +144,25 @@ ActiveRecord::Schema.define(version: 20160415153312) do
     t.integer "host_id"
     t.integer "nx_console_id"
     t.integer "nx_device_id"
-    t.string  "src"
-    t.string  "nx_site_name"
-    t.string  "nx_site_importance"
-    t.string  "nx_scan_template"
+    t.string  "src",                limit: 255
+    t.string  "nx_site_name",       limit: 255
+    t.string  "nx_site_importance", limit: 255
+    t.string  "nx_scan_template",   limit: 255
     t.float   "nx_risk_score"
   end
 
   create_table "hosts", force: :cascade do |t|
     t.datetime "created_at"
     t.inet     "address",                                         null: false
-    t.string   "mac"
-    t.string   "comm"
-    t.string   "name"
-    t.string   "state"
-    t.string   "os_name"
-    t.string   "os_flavor"
-    t.string   "os_sp"
-    t.string   "os_lang"
-    t.string   "arch"
+    t.string   "mac",                   limit: 255
+    t.string   "comm",                  limit: 255
+    t.string   "name",                  limit: 255
+    t.string   "state",                 limit: 255
+    t.string   "os_name",               limit: 255
+    t.string   "os_flavor",             limit: 255
+    t.string   "os_sp",                 limit: 255
+    t.string   "os_lang",               limit: 255
+    t.string   "arch",                  limit: 255
     t.integer  "workspace_id",                                    null: false
     t.datetime "updated_at"
     t.text     "purpose"
@@ -176,7 +176,7 @@ ActiveRecord::Schema.define(version: 20160415153312) do
     t.integer  "host_detail_count",                   default: 0
     t.integer  "exploit_attempt_count",               default: 0
     t.integer  "cred_count",                          default: 0
-    t.string   "detected_arch"
+    t.string   "detected_arch",         limit: 255
   end
 
   add_index "hosts", ["name"], name: "index_hosts_on_name", using: :btree
@@ -214,7 +214,7 @@ ActiveRecord::Schema.define(version: 20160415153312) do
     t.text     "data"
     t.datetime "created_at",                             null: false
     t.datetime "updated_at",                             null: false
-    t.string   "content_type"
+    t.string   "content_type",  limit: 255
     t.text     "name"
     t.text     "info"
     t.integer  "module_run_id"
@@ -233,15 +233,15 @@ ActiveRecord::Schema.define(version: 20160415153312) do
   end
 
   create_table "metasploit_credential_cores", force: :cascade do |t|
-    t.integer  "origin_id",                null: false
-    t.string   "origin_type",              null: false
+    t.integer  "origin_id",                            null: false
+    t.string   "origin_type",  limit: 255,             null: false
     t.integer  "private_id"
     t.integer  "public_id"
     t.integer  "realm_id"
-    t.integer  "workspace_id",             null: false
-    t.datetime "created_at",               null: false
-    t.datetime "updated_at",               null: false
-    t.integer  "logins_count", default: 0
+    t.integer  "workspace_id",                         null: false
+    t.datetime "created_at",                           null: false
+    t.datetime "updated_at",                           null: false
+    t.integer  "logins_count",             default: 0
   end
 
   add_index "metasploit_credential_cores", ["origin_type", "origin_id"], name: "index_metasploit_credential_cores_on_origin_type_and_origin_id", using: :btree
@@ -257,13 +257,13 @@ ActiveRecord::Schema.define(version: 20160415153312) do
   add_index "metasploit_credential_cores", ["workspace_id"], name: "index_metasploit_credential_cores_on_workspace_id", using: :btree
 
   create_table "metasploit_credential_logins", force: :cascade do |t|
-    t.integer  "core_id",           null: false
-    t.integer  "service_id",        null: false
-    t.string   "access_level"
-    t.string   "status",            null: false
+    t.integer  "core_id",                       null: false
+    t.integer  "service_id",                    null: false
+    t.string   "access_level",      limit: 255
+    t.string   "status",            limit: 255, null: false
     t.datetime "last_attempted_at"
-    t.datetime "created_at",        null: false
-    t.datetime "updated_at",        null: false
+    t.datetime "created_at",                    null: false
+    t.datetime "updated_at",                    null: false
   end
 
   add_index "metasploit_credential_logins", ["core_id", "service_id"], name: "index_metasploit_credential_logins_on_core_id_and_service_id", unique: true, using: :btree
@@ -313,29 +313,29 @@ ActiveRecord::Schema.define(version: 20160415153312) do
   add_index "metasploit_credential_origin_sessions", ["session_id", "post_reference_name"], name: "unique_metasploit_credential_origin_sessions", unique: true, using: :btree
 
   create_table "metasploit_credential_privates", force: :cascade do |t|
-    t.string   "type",       null: false
-    t.text     "data",       null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string   "jtr_format"
+    t.string   "type",       limit: 255, null: false
+    t.text     "data",                   null: false
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+    t.string   "jtr_format", limit: 255
   end
 
   add_index "metasploit_credential_privates", ["type", "data"], name: "index_metasploit_credential_privates_on_type_and_data", unique: true, using: :btree
 
   create_table "metasploit_credential_publics", force: :cascade do |t|
-    t.string   "username",   null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string   "type",       null: false
+    t.string   "username",   limit: 255, null: false
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+    t.string   "type",       limit: 255, null: false
   end
 
   add_index "metasploit_credential_publics", ["username"], name: "index_metasploit_credential_publics_on_username", unique: true, using: :btree
 
   create_table "metasploit_credential_realms", force: :cascade do |t|
-    t.string   "key",        null: false
-    t.string   "value",      null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.string   "key",        limit: 255, null: false
+    t.string   "value",      limit: 255, null: false
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
   end
 
   add_index "metasploit_credential_realms", ["key", "value"], name: "index_metasploit_credential_realms_on_key_and_value", unique: true, using: :btree
@@ -371,18 +371,18 @@ ActiveRecord::Schema.define(version: 20160415153312) do
   create_table "module_details", force: :cascade do |t|
     t.datetime "mtime"
     t.text     "file"
-    t.string   "mtype"
+    t.string   "mtype",           limit: 255
     t.text     "refname"
     t.text     "fullname"
     t.text     "name"
     t.integer  "rank"
     t.text     "description"
-    t.string   "license"
+    t.string   "license",         limit: 255
     t.boolean  "privileged"
     t.datetime "disclosure_date"
     t.integer  "default_target"
     t.text     "default_action"
-    t.string   "stance"
+    t.string   "stance",          limit: 255
     t.boolean  "ready"
   end
 
@@ -416,18 +416,18 @@ ActiveRecord::Schema.define(version: 20160415153312) do
   create_table "module_runs", force: :cascade do |t|
     t.datetime "attempted_at"
     t.text     "fail_detail"
-    t.string   "fail_reason"
+    t.string   "fail_reason",     limit: 255
     t.text     "module_fullname"
     t.integer  "port"
-    t.string   "proto"
+    t.string   "proto",           limit: 255
     t.integer  "session_id"
-    t.string   "status"
+    t.string   "status",          limit: 255
     t.integer  "trackable_id"
-    t.string   "trackable_type"
+    t.string   "trackable_type",  limit: 255
     t.integer  "user_id"
-    t.string   "username"
-    t.datetime "created_at",      null: false
-    t.datetime "updated_at",      null: false
+    t.string   "username",        limit: 255
+    t.datetime "created_at",                  null: false
+    t.datetime "updated_at",                  null: false
   end
 
   add_index "module_runs", ["session_id"], name: "index_module_runs_on_session_id", using: :btree
@@ -493,7 +493,7 @@ ActiveRecord::Schema.define(version: 20160415153312) do
 
   create_table "report_templates", force: :cascade do |t|
     t.integer  "workspace_id",              default: 1, null: false
-    t.string   "created_by"
+    t.string   "created_by",   limit: 255
     t.string   "path",         limit: 1024
     t.text     "name"
     t.datetime "created_at",                            null: false
@@ -502,8 +502,8 @@ ActiveRecord::Schema.define(version: 20160415153312) do
 
   create_table "reports", force: :cascade do |t|
     t.integer  "workspace_id",               default: 1, null: false
-    t.string   "created_by"
-    t.string   "rtype"
+    t.string   "created_by",    limit: 255
+    t.string   "rtype",         limit: 255
     t.string   "path",          limit: 1024
     t.text     "options"
     t.datetime "created_at",                             null: false
@@ -515,17 +515,17 @@ ActiveRecord::Schema.define(version: 20160415153312) do
 
   create_table "routes", force: :cascade do |t|
     t.integer "session_id"
-    t.string  "subnet"
-    t.string  "netmask"
+    t.string  "subnet",     limit: 255
+    t.string  "netmask",    limit: 255
   end
 
   create_table "services", force: :cascade do |t|
     t.integer  "host_id"
     t.datetime "created_at"
-    t.integer  "port",                  null: false
-    t.string   "proto",      limit: 16, null: false
-    t.string   "state"
-    t.string   "name"
+    t.integer  "port",                   null: false
+    t.string   "proto",      limit: 16,  null: false
+    t.string   "state",      limit: 255
+    t.string   "name",       limit: 255
     t.datetime "updated_at"
     t.text     "info"
   end
@@ -538,26 +538,26 @@ ActiveRecord::Schema.define(version: 20160415153312) do
 
   create_table "session_events", force: :cascade do |t|
     t.integer  "session_id"
-    t.string   "etype"
+    t.string   "etype",       limit: 255
     t.binary   "command"
     t.binary   "output"
-    t.string   "remote_path"
-    t.string   "local_path"
+    t.string   "remote_path", limit: 255
+    t.string   "local_path",  limit: 255
     t.datetime "created_at"
   end
 
   create_table "sessions", force: :cascade do |t|
     t.integer  "host_id"
-    t.string   "stype"
-    t.string   "via_exploit"
-    t.string   "via_payload"
-    t.string   "desc"
+    t.string   "stype",         limit: 255
+    t.string   "via_exploit",   limit: 255
+    t.string   "via_payload",   limit: 255
+    t.string   "desc",          limit: 255
     t.integer  "port"
-    t.string   "platform"
+    t.string   "platform",      limit: 255
     t.text     "datastore"
-    t.datetime "opened_at",     null: false
+    t.datetime "opened_at",                 null: false
     t.datetime "closed_at"
-    t.string   "close_reason"
+    t.string   "close_reason",  limit: 255
     t.integer  "local_id"
     t.datetime "last_seen"
     t.integer  "module_run_id"
@@ -606,12 +606,12 @@ ActiveRecord::Schema.define(version: 20160415153312) do
 
   create_table "tasks", force: :cascade do |t|
     t.integer  "workspace_id",              default: 1, null: false
-    t.string   "created_by"
-    t.string   "module"
+    t.string   "created_by",   limit: 255
+    t.string   "module",       limit: 255
     t.datetime "completed_at"
     t.string   "path",         limit: 1024
-    t.string   "info"
-    t.string   "description"
+    t.string   "info",         limit: 255
+    t.string   "description",  limit: 255
     t.integer  "progress"
     t.text     "options"
     t.text     "error"
@@ -623,16 +623,16 @@ ActiveRecord::Schema.define(version: 20160415153312) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string   "username"
-    t.string   "crypted_password"
-    t.string   "password_salt"
-    t.string   "persistence_token"
+    t.string   "username",          limit: 255
+    t.string   "crypted_password",  limit: 255
+    t.string   "password_salt",     limit: 255
+    t.string   "persistence_token", limit: 255
     t.datetime "created_at",                                      null: false
     t.datetime "updated_at",                                      null: false
-    t.string   "fullname"
-    t.string   "email"
-    t.string   "phone"
-    t.string   "company"
+    t.string   "fullname",          limit: 255
+    t.string   "email",             limit: 255
+    t.string   "phone",             limit: 255
+    t.string   "company",           limit: 255
     t.string   "prefs",             limit: 524288
     t.boolean  "admin",                            default: true, null: false
   end
@@ -641,8 +641,8 @@ ActiveRecord::Schema.define(version: 20160415153312) do
     t.integer  "vuln_id"
     t.datetime "attempted_at"
     t.boolean  "exploited"
-    t.string   "fail_reason"
-    t.string   "username"
+    t.string   "fail_reason",  limit: 255
+    t.string   "username",     limit: 255
     t.text     "module"
     t.integer  "session_id"
     t.integer  "loot_id"
@@ -652,14 +652,14 @@ ActiveRecord::Schema.define(version: 20160415153312) do
   create_table "vuln_details", force: :cascade do |t|
     t.integer  "vuln_id"
     t.float    "cvss_score"
-    t.string   "cvss_vector"
-    t.string   "title"
+    t.string   "cvss_vector",              limit: 255
+    t.string   "title",                    limit: 255
     t.text     "description"
     t.text     "solution"
     t.binary   "proof"
     t.integer  "nx_console_id"
     t.integer  "nx_device_id"
-    t.string   "nx_vuln_id"
+    t.string   "nx_vuln_id",               limit: 255
     t.float    "nx_severity"
     t.float    "nx_pci_severity"
     t.datetime "nx_published"
@@ -668,24 +668,24 @@ ActiveRecord::Schema.define(version: 20160415153312) do
     t.text     "nx_tags"
     t.text     "nx_vuln_status"
     t.text     "nx_proof_key"
-    t.string   "src"
+    t.string   "src",                      limit: 255
     t.integer  "nx_scan_id"
     t.datetime "nx_vulnerable_since"
-    t.string   "nx_pci_compliance_status"
+    t.string   "nx_pci_compliance_status", limit: 255
   end
 
   create_table "vulns", force: :cascade do |t|
     t.integer  "host_id"
     t.integer  "service_id"
     t.datetime "created_at"
-    t.string   "name"
+    t.string   "name",               limit: 255
     t.datetime "updated_at"
     t.string   "info",               limit: 65536
     t.datetime "exploited_at"
     t.integer  "vuln_detail_count",                default: 0
     t.integer  "vuln_attempt_count",               default: 0
     t.integer  "origin_id"
-    t.string   "origin_type"
+    t.string   "origin_type",        limit: 255
   end
 
   add_index "vulns", ["name"], name: "index_vulns_on_name", using: :btree
@@ -758,7 +758,7 @@ ActiveRecord::Schema.define(version: 20160415153312) do
     t.text     "blame"
     t.binary   "request"
     t.binary   "proof",                    null: false
-    t.string   "owner"
+    t.string   "owner",       limit: 255
     t.text     "payload"
   end
 
@@ -767,7 +767,7 @@ ActiveRecord::Schema.define(version: 20160415153312) do
   add_index "web_vulns", ["path"], name: "index_web_vulns_on_path", using: :btree
 
   create_table "wmap_requests", force: :cascade do |t|
-    t.string   "host"
+    t.string   "host",       limit: 255
     t.inet     "address"
     t.integer  "port"
     t.integer  "ssl"
@@ -784,7 +784,7 @@ ActiveRecord::Schema.define(version: 20160415153312) do
   end
 
   create_table "wmap_targets", force: :cascade do |t|
-    t.string   "host"
+    t.string   "host",       limit: 255
     t.inet     "address"
     t.integer  "port"
     t.integer  "ssl"
@@ -799,7 +799,7 @@ ActiveRecord::Schema.define(version: 20160415153312) do
   end
 
   create_table "workspaces", force: :cascade do |t|
-    t.string   "name"
+    t.string   "name",             limit: 255
     t.datetime "created_at",                                    null: false
     t.datetime "updated_at",                                    null: false
     t.string   "boundary",         limit: 4096
