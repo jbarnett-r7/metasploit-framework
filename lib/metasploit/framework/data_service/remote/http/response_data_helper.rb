@@ -43,7 +43,7 @@ module ResponseDataHelper
   # @param [Anything] A failsafe response to return if no objects are found.
   # @return [ActiveRecord::Base] An object of type mdm_class, which inherits from ActiveRecord::Base
   #
-  # TEST
+  # TEST2
   def json_to_mdm_object(response_wrapper, mdm_class, returns_on_error = nil)
     if response_wrapper.expected
       begin
