@@ -6,6 +6,7 @@ require 'rex/parser/nmap_xml'
 require 'msf/core/db_export'
 require 'metasploit/framework/data_service'
 require 'metasploit/framework/data_service/remote/http/core'
+require 'msf/ui/console/command_dispatcher/db/payloads'
 
 module Msf
 module Ui
@@ -18,6 +19,8 @@ class Db
 
   include Msf::Ui::Console::CommandDispatcher
   include Msf::Ui::Console::CommandDispatcher::Common
+
+  include Msf::Ui::Console::CommandDispatcher::Payloads
 
   DB_CONFIG_PATH = 'framework/database'
 
@@ -37,26 +40,31 @@ class Db
       "db_disconnect" => "Disconnect from the current data service",
       "db_status"     => "Show the current data service status",
       "db_save"       => "Save the current data service connection as the default to reconnect on startup",
-      "db_remove"     => "Remove the saved data service entry"
-    }
-
-    more = {
-      "workspace"     => "Switch between database workspaces",
-      "hosts"         => "List all hosts in the database",
-      "services"      => "List all services in the database",
-      "vulns"         => "List all vulnerabilities in the database",
-      "notes"         => "List all notes in the database",
-      "loot"          => "List all loot in the database",
+      "db_remove"     => "Remove the saved data service entry",
       "db_import"     => "Import a scan result file (filetype will be auto-detected)",
       "db_export"     => "Export a file containing the contents of the database",
       "db_nmap"       => "Executes nmap and records the output automatically",
       "db_rebuild_cache" => "Rebuilds the database-stored module cache",
     }
 
+    models = {
+      "workspace"     => "Switch between database workspaces",
+      "hosts"         => "List all hosts in the database",
+      "services"      => "List all services in the database",
+      "vulns"         => "List all vulnerabilities in the database",
+      "notes"         => "List all notes in the database",
+      "loot"          => "List all loot in the database",
+    }
+
+    extensions = {}
+    self.methods.each do |method|
+      extensions.merge!(self.send(method)) if method =~ /commands_\w+/
+    end
+
     # Always include commands that only make sense when connected.
     # This avoids the problem of them disappearing unexpectedly if the
     # database dies or times out.  See #1923
-    base.merge(more)
+    base.merge(models).merge(extensions)
   end
 
   def deprecated_commands
