@@ -27,6 +27,37 @@ module Payloads
       cmd_payloads_help
       return
     end
+
+    opts = { order_by: 0 }
+    while (arg = args.shift)
+      case arg
+        when '-c','-C'
+          list = args.shift
+          if(!list)
+            print_error("Invalid column list")
+            return
+          end
+          col_search = list.strip.split(",")
+          col_search.each { |c|
+            if not default_columns.include?(c) and not extra_columns.include?(c)
+              all_columns = default_columns + extra_columns
+              print_error("Invalid column list. Possible values are (#{all_columns.join("|")})")
+              return
+            end
+          }
+          if (arg == '-C')
+            @@payload_columns = col_search
+          end
+          opts[:col_search] = col_search
+        when '-O','--order-by'
+          if (opts[:order_by] = args.shift.to_i - 1) < 0
+            print_error('Please specify a column number starting from 1')
+            return
+          end
+      end
+    end
+
+    payloads_search(opts)
   end
 
   def cmd_payloads_help
@@ -42,14 +73,39 @@ module Payloads
     return
   end
 
-  def payloads_search(*args)
+  def payloads_search(opts)
+    col_names = default_columns
+    if @@payload_columns
+      col_names = @@payload_columns
+    end
+    if opts[:col_search]
+      col_names = opts[:col_search]
+    end
 
+    tbl = Rex::Text::Table.new({
+                                   'Header'    => "Payloads",
+                                   'Columns'   => col_names,
+                                   'SortIndex' => opts[:order_by]
+                               })
+
+    payloads = framework.db.payloads(workspace: framework.db.workspace)
+
+    payloads.each do |payload|
+      columns = col_names.map { |n| payload[n].to_s || "" }
+      tbl << columns
+    end
+
+    print_line(tbl.to_s)
   end
 
   private
 
   def default_columns
     [ 'name', 'uuid', 'arch', 'platform', 'description']
+  end
+
+  def extra_columns
+    [ 'timestamp', 'urls', 'raw_payload_hash', 'build_opts']
   end
 end
 
