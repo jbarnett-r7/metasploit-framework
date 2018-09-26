@@ -23,7 +23,10 @@ module Msf::DBManager::Payload
         column_search_conditions = Msf::Util::DBManager.create_all_column_search_conditions(Mdm::Payload, search_term)
         wspace.payloads.where(opts).where(column_search_conditions)
       else
-        wspace.payloads.where(opts)
+        # The .order call is a hack to ensure that an ActiveRecord_AssociationRelation is created instead of an
+        # ActiveRecord_Associations_CollectionProxy. This is because CollectionProxy uses cached values of the query
+        # unless .reload is explicitly called, which can make the results from this object inconsistent with what is expected.
+        wspace.payloads.where(opts).order(:id)
       end
     end
   end

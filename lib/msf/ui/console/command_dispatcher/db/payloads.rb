@@ -30,7 +30,8 @@ module Payloads
       return
     end
 
-    opts = { order_by: 0 }
+    opts = { order_by: 0, search_opts: {} }
+    delete = false
     while (arg = args.shift)
       case arg
         when '-c','-C'
@@ -51,17 +52,27 @@ module Payloads
             @@payload_columns = col_search
           end
           opts[:col_search] = col_search
+        when '-d','--delete'
+          delete = true
         when '-O','--order-by'
           if (opts[:order_by] = args.shift.to_i - 1) < 0
             print_error('Please specify a column number starting from 1')
             return
           end
         when '-S','-search'
-          opts[:search_term] = args.shift
+          opts[:search_opts][:search_term] = args.shift
       end
     end
 
-    payloads_search(opts)
+    payloads = payloads_search(opts[:search_opts])
+    display_payloads(payloads, opts)
+    if delete
+      delete_opts = {}
+      delete_opts[:ids] = payloads.map { |p| p.id }
+      deleted = framework.db.delete_payload(delete_opts)
+      print_status "Deleted #{deleted.count} payloads." if deleted.size > 0
+    end
+    true
   end
 
   def cmd_payloads_help
@@ -78,30 +89,32 @@ module Payloads
     return
   end
 
-  def payloads_search(opts)
+  def display_payloads(payloads_temp, opts)
     col_names = default_columns
     if @@payload_columns
       col_names = @@payload_columns
     end
     if opts[:col_search]
-      col_names = opts.delete(:col_search)
+      col_names = opts[:col_search]
     end
 
     tbl = Rex::Text::Table.new({
                                    'Header'    => "Payloads",
                                    'Columns'   => col_names,
-                                   'SortIndex' => opts.delete(:order_by)
+                                   'SortIndex' => opts[:order_by]
                                })
 
-    opts[:workspace] = framework.db.workspace
-    payloads = framework.db.payloads(opts)
-
-    payloads.each do |payload|
-      columns = col_names.map { |n| payload[n].to_s || "" }
+    payloads.each do |p|
+      columns = col_names.map { |n| p[n].to_s || "" }
       tbl << columns
     end
 
     print_line(tbl.to_s)
+  end
+
+  def payloads_search(search_opts)
+    search_opts[:workspace] = framework.db.workspace
+    framework.db.payloads(search_opts)
   end
 
   private
