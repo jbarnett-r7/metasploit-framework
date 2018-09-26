@@ -16,8 +16,15 @@ module Msf::DBManager::Payload
         return Array.wrap(Mdm::Payload.find(opts[:id]))
       end
 
+      search_term = opts.delete(:search_term)
+
       wspace = Msf::Util::DBManager.process_opts_workspace(opts, framework)
-      return wspace.payloads.where(opts)
+      if search_term && !search_term.empty?
+        column_search_conditions = Msf::Util::DBManager.create_all_column_search_conditions(Mdm::Payload, search_term)
+        wspace.payloads.where(opts).where(column_search_conditions)
+      else
+        wspace.payloads.where(opts)
+      end
     end
   end
 

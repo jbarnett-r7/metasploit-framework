@@ -10,6 +10,8 @@ module Console
 module CommandDispatcher
 
 module Payloads
+  @@payload_columns = nil
+
   #
   # Returns the hash of commands supported by this dispatcher.
   #
@@ -54,6 +56,8 @@ module Payloads
             print_error('Please specify a column number starting from 1')
             return
           end
+        when '-S','-search'
+          opts[:search_term] = args.shift
       end
     end
 
@@ -66,6 +70,7 @@ module Payloads
     print_line "OPTIONS:"
     print_line "  -c <col1,col2>    Only show the given columns (see list below)"
     print_line "  -C <col1,col2>    Only show the given columns until the next restart (see list below)"
+    print_line "  -S,--search       Search string to filter by"
     print_line "  -h,--help         Show this help information"
     print_line
     print_line "Available columns: #{default_columns.join(", ")}"
@@ -79,16 +84,17 @@ module Payloads
       col_names = @@payload_columns
     end
     if opts[:col_search]
-      col_names = opts[:col_search]
+      col_names = opts.delete(:col_search)
     end
 
     tbl = Rex::Text::Table.new({
                                    'Header'    => "Payloads",
                                    'Columns'   => col_names,
-                                   'SortIndex' => opts[:order_by]
+                                   'SortIndex' => opts.delete(:order_by)
                                })
 
-    payloads = framework.db.payloads(workspace: framework.db.workspace)
+    opts[:workspace] = framework.db.workspace
+    payloads = framework.db.payloads(opts)
 
     payloads.each do |payload|
       columns = col_names.map { |n| payload[n].to_s || "" }
