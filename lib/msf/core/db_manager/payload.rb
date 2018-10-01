@@ -7,7 +7,23 @@ module Msf::DBManager::Payload
       end
     end
 
-    Mdm::Payload.create(opts)
+    if ! ::File.directory?(Msf::Config.payload_directory)
+      FileUtils.mkdir_p(Msf::Config.payload_directory)
+    end
+
+    wspace = Msf::Util::DBManager.process_opts_workspace(opts, framework)
+
+    if opts[:file]
+      file = opts.delete(:file)
+      filename = File.basename(file)
+      payload_path = File.join(Msf::Config.payload_directory, filename)
+      FileUtils.copy(file, payload_path)
+      opts[:raw_payload] = payload_path
+      sha256 = Digest::SHA256.file(payload_path)
+      opts[:raw_payload_hash] = sha256.hexdigest
+    end
+
+    Mdm::Payload.create(opts.merge({ workspace: wspace }))
   end
 
   def payloads(opts)
@@ -24,7 +40,7 @@ module Msf::DBManager::Payload
         wspace.payloads.where(opts).where(column_search_conditions)
       else
         # The .order call is a hack to ensure that an ActiveRecord_AssociationRelation is created instead of an
-        # ActiveRecord_Associations_CollectionProxy. This is because CollectionProxy uses cached values of the query
+        # ActiveRecord_Associations_CollectionProxy. This is because CollectionProxy uses cached values of the DB query
         # unless .reload is explicitly called, which can make the results from this object inconsistent with what is expected.
         wspace.payloads.where(opts).order(:id)
       end
@@ -60,4 +76,36 @@ module Msf::DBManager::Payload
     end
   end
 
+  private
+
+  def store_payload
+    if ! ::File.directory?(Msf::Config.payload_directory)
+      FileUtils.mkdir_p(Msf::Config.payload_directory)
+    end
+
+    ext = 'bin'
+    if filename
+      parts = filename.to_s.split('.')
+      if parts.length > 1 and parts[-1].length < 4
+        ext = parts[-1]
+      end
+    end
+
+    # This method is available even if there is no database, don't bother checking
+    host = Msf::Util::Host.normalize_host(host)
+
+    ws = (db ? myworkspace.name[0,16] : 'default')
+    name =
+        Time.now.strftime("%Y%m%d%H%M%S") + "_" + ws + "_" +
+            (host || 'unknown') + '_' + ltype[0,16] + '_' +
+            Rex::Text.rand_text_numeric(6) + '.' + ext
+
+    name.gsub!(/[^a-z0-9\.\_]+/i, '')
+
+    path = File.join(Msf::Config.loot_directory, name)
+    full_path = ::File.expand_path(path)
+    File.open(full_path, "wb") do |fd|
+      fd.write(data)
+    end
+  end
 end

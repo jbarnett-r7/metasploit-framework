@@ -74,7 +74,8 @@ class Config < Hash
       'PluginDirectory'     => "plugins",
       'DataDirectory'       => "data",
       'LootDirectory'       => "loot",
-      'LocalDirectory'      => "local"
+      'LocalDirectory'      => "local",
+      'PayloadDirectory'    => "payload"
     }
 
   ##
@@ -151,6 +152,10 @@ class Config < Hash
   # @return [String] path to loot directory.
   def self.loot_directory
     self.new.loot_directory
+  end
+
+  def self.payload_directory
+    self.new.payload_directory
   end
 
   # Returns the directory in which locally-generated data will reside.
@@ -347,6 +352,10 @@ class Config < Hash
   # @return [String] path to locally-generated data directory.
   def local_directory
     config_directory + FileSep + self['LocalDirectory']
+  end
+
+  def payload_directory
+    config_directory + FileSep + self['PayloadDirectory']
   end
 
   # Return the user-specific directory that logo files should be loaded from.

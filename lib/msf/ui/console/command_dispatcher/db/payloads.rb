@@ -3,6 +3,7 @@
 require 'rexml/document'
 require 'rex/parser/nmap_xml'
 require 'msf/core/db_export'
+require 'digest'
 
 module Msf
 module Ui
@@ -30,10 +31,12 @@ module Payloads
       return
     end
 
-    opts = { order_by: 0, search_opts: {} }
-    delete = false
+    opts = { order_by: 0, search_opts: {}, add_opts: {} }
+    mode = nil
     while (arg = args.shift)
       case arg
+        when '-a','--add'
+          mode = :add
         when '-c','-C'
           list = args.shift
           if(!list)
@@ -52,27 +55,39 @@ module Payloads
             @@payload_columns = col_search
           end
           opts[:col_search] = col_search
-        when '-d','--delete'
-          delete = true
+        when '-d','--description'
+          opts[:add_opts][:description] = args.shift
+        when '-D','--delete'
+          mode = :delete
+        when '-f','--file'
+          opts[:add_opts][:file] = args.shift
+        when '-n','--name'
+          opts[:add_opts][:name] = args.shift
         when '-O','--order-by'
           if (opts[:order_by] = args.shift.to_i - 1) < 0
             print_error('Please specify a column number starting from 1')
             return
           end
+        when '-p','--platform'
+          opts[:add_opts][:platform] = args.shift
+        when '-r','--arch'
+          opts[:add_opts][:arch] = args.shift
         when '-S','-search'
           opts[:search_opts][:search_term] = args.shift
       end
     end
 
+    if mode == :add
+      add_payload(opts)
+    end
     payloads = payloads_search(opts[:search_opts])
     display_payloads(payloads, opts)
-    if delete
+    if mode == :delete
       delete_opts = {}
       delete_opts[:ids] = payloads.map { |p| p.id }
       deleted = framework.db.delete_payload(delete_opts)
       print_status "Deleted #{deleted.count} payloads." if deleted.size > 0
     end
-    true
   end
 
   def cmd_payloads_help
@@ -89,7 +104,7 @@ module Payloads
     return
   end
 
-  def display_payloads(payloads_temp, opts)
+  def display_payloads(payloads, opts)
     col_names = default_columns
     if @@payload_columns
       col_names = @@payload_columns
@@ -104,8 +119,8 @@ module Payloads
                                    'SortIndex' => opts[:order_by]
                                })
 
-    payloads.each do |p|
-      columns = col_names.map { |n| p[n].to_s || "" }
+    payloads.each do |payload|
+      columns = col_names.map { |n| payload[n].to_s || "" }
       tbl << columns
     end
 
@@ -115,6 +130,22 @@ module Payloads
   def payloads_search(search_opts)
     search_opts[:workspace] = framework.db.workspace
     framework.db.payloads(search_opts)
+  end
+
+  def add_payload(opts)
+    if opts[:add_opts][:file].nil? || (opts[:add_opts][:file].is_a?(String) && opts[:add_opts][:file].empty?)
+      print_error "A payload file is required. Please specify one with the -f option."
+      print_line
+      return
+    end
+    unless File.exists?(opts[:add_opts][:file])
+      print_error "Unable to locate the payload file at #{opts[:add_opts][:file]}"
+      print_line
+      return
+    end
+
+    opts[:add_opts][:workspace] = framework.db.workspace
+    framework.db.create_payload(opts[:add_opts])
   end
 
   private
