@@ -28,9 +28,6 @@ require 'msf/core/web_services/servlet/vuln_attempt_servlet'
 require 'msf/core/web_services/servlet/user_servlet'
 require 'msf/core/web_services/servlet/module_search_servlet'
 require 'msf/core/web_services/servlet/db_import_servlet'
-
-require 'msf/core/web_services/ws_updater'
-
 require 'msf/core/web_services/servlet/update_stream_servlet'
 
 class MetasploitApiApp < Sinatra::Base
