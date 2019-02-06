@@ -2,6 +2,8 @@ require 'securerandom'
 require 'sinatra/base'
 require 'swagger/blocks'
 require 'warden'
+require 'sinatra-websocket'
+
 require 'msf/core/web_services/authentication'
 require 'msf/core/web_services/servlet_helper'
 require 'msf/core/web_services/servlet/api_docs_servlet'
@@ -57,6 +59,7 @@ class MetasploitApiApp < Sinatra::Base
   configure do
     set :sessions, {key: 'msf-ws.session', expire_after: 300}
     set :session_secret, ENV.fetch('MSF_WS_SESSION_SECRET') { SecureRandom.hex(16) }
+    set :sockets, []
   end
 
   before do

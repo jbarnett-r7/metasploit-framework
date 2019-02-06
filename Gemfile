@@ -37,6 +37,7 @@ group :development, :test do
   gem 'rspec-rails'
   gem 'rspec-rerun'
   gem 'swagger-blocks'
+  gem 'sinatra-websocket'
 end
 
 group :test do
