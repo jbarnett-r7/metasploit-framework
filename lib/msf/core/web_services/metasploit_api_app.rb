@@ -29,6 +29,10 @@ require 'msf/core/web_services/servlet/user_servlet'
 require 'msf/core/web_services/servlet/module_search_servlet'
 require 'msf/core/web_services/servlet/db_import_servlet'
 
+require 'msf/core/web_services/ws_updater'
+
+require 'msf/core/web_services/servlet/update_stream_servlet'
+
 class MetasploitApiApp < Sinatra::Base
   helpers ServletHelper
 
@@ -55,6 +59,7 @@ class MetasploitApiApp < Sinatra::Base
   register UserServlet
   register ModuleSearchServlet
   register DbImportServlet
+  register UpdateStreamServlet
 
   configure do
     set :sessions, {key: 'msf-ws.session', expire_after: 300}
@@ -68,6 +73,38 @@ class MetasploitApiApp < Sinatra::Base
     # store flag indicating whether authentication is initialized in the request environment
     @@auth_initialized ||= get_db.users({}).count > 0
     request.env['msf.auth_initialized'] = @@auth_initialized
+
+    # Monitor all requests made to the server. If it is not a read (GET) request, assume
+    # something changed and inform the websocket subscribers that they need to check for
+    # updates on the particular method.
+    #
+    # There are some obvious flaws with this:
+    #  - It doesn't know if the underlying request was successful or not (but does it really matter?)
+    unless request.get?
+      settings.sockets.each do |ws|
+        response = {}
+        case request.env['REQUEST_METHOD']
+        when 'POST'
+          response[:action] = 'create'
+        when 'DELETE'
+          response[:action] = 'delete'
+        when 'PUT'
+          response[:action] = 'update'
+        end
+
+        response[:model] = request.env['REQUEST_PATH'].split('/').last
+        # If the value is an integer the user has an ID in the path
+        # Save off that ID and update the model value to be the token before the last
+        #
+        # TODO: This integer check won't work if there is a query string
+        if response[:model].to_i.to_s == response[:model]
+          response[:id] = response[:model]
+          response[:model] = request.env['REQUEST_PATH'].split('/')[-2]
+        end
+
+        ws.send response.to_json
+      end
+    end
   end
 
   use Warden::Manager do |config|
