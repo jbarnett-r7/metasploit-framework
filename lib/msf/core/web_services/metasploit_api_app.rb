@@ -1,3 +1,4 @@
+require 'rack/cors'
 require 'securerandom'
 require 'sinatra/base'
 require 'swagger/blocks'
@@ -106,6 +107,17 @@ class MetasploitApiApp < Sinatra::Base
       end
 
       ws.send updates_json.to_json
+    end
+  end
+
+  use Rack::Cors do
+    allow do
+      origins '*'
+
+      resource '*',
+               :headers => :any,
+               :methods => [:get, :post, :delete, :put, :patch, :options, :head],
+               :max_age => 600
     end
   end
 
