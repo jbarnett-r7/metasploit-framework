@@ -1,3 +1,4 @@
+require 'rack/cors'
 require 'securerandom'
 require 'sinatra/base'
 require 'swagger/blocks'
@@ -34,6 +35,17 @@ module Msf::WebServices
       # store flag indicating whether authentication is initialized in the request environment
       @@auth_initialized ||= get_db.users({}).count > 0
       request.env['msf.auth_initialized'] = @@auth_initialized
+    end
+
+    use Rack::Cors do
+      allow do
+        origins '*'
+
+        resource '*',
+                 :headers => :any,
+                 :methods => [:post],
+                 :max_age => 600
+      end
     end
 
     use Warden::Manager do |config|
