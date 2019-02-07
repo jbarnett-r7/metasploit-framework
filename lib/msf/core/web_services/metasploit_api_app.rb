@@ -70,37 +70,42 @@ class MetasploitApiApp < Sinatra::Base
     # store flag indicating whether authentication is initialized in the request environment
     @@auth_initialized ||= get_db.users({}).count > 0
     request.env['msf.auth_initialized'] = @@auth_initialized
+  end
 
+  after do
     # Monitor all requests made to the server. If it is not a read (GET) request, assume
     # something changed and inform the websocket subscribers that they need to check for
     # updates on the particular method.
-    #
-    # There are some obvious flaws with this:
-    #  - It doesn't know if the underlying request was successful or not (but does it really matter?)
-    unless request.get?
-      settings.sockets.each do |ws|
-        response = {}
-        case request.env['REQUEST_METHOD']
-        when 'POST'
-          response[:action] = 'create'
-        when 'DELETE'
-          response[:action] = 'delete'
-        when 'PUT'
-          response[:action] = 'update'
-        end
+    if request.get? || response.status != 200 ||request.env['REQUEST_PATH'].match(/auth/) || request.env['REQUEST_PATH'].match(/api-docs/)
+      return
+    end
 
-        response[:model] = request.env['REQUEST_PATH'].split('/').last
-        # If the value is an integer the user has an ID in the path
-        # Save off that ID and update the model value to be the token before the last
-        #
-        # TODO: This integer check won't work if there is a query string
-        if response[:model].to_i.to_s == response[:model]
-          response[:id] = response[:model]
-          response[:model] = request.env['REQUEST_PATH'].split('/')[-2]
-        end
-
-        ws.send response.to_json
+    settings.sockets.each do |ws|
+      parsed_body_data = JSON.parse(response.body.first, symbolize_names: true)[:data] if response.body
+      updates_json = {}
+      case request.env['REQUEST_METHOD']
+      when 'POST'
+        updates_json[:action] = 'create'
+        updates_json[:ids] = Array.wrap(parsed_body_data[:id])
+      when 'DELETE'
+        updates_json[:action] = 'delete'
+        ids = []
+        parsed_body_data.each { |i| ids << i[:id] }
+        updates_json[:ids] = ids
+      when 'PUT'
+        updates_json[:action] = 'update'
+        updates_json[:ids] = Array.wrap(parsed_body_data[:id])
       end
+
+      updates_json[:model] = request.env['REQUEST_PATH'].split('/').last
+      # If the value is an integer the user has an ID in the path
+      #
+      # TODO: This integer check won't work if there is a query string
+      if updates_json[:model].to_i.to_s == updates_json[:model]
+        updates_json[:model] = request.env['REQUEST_PATH'].split('/')[-2]
+      end
+
+      ws.send updates_json.to_json
     end
   end
 
